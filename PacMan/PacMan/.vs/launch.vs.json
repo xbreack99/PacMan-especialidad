@@ -1,0 +1,15 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "PacMan.exe (PacMan\\PacMan.exe)",
+      "name": "PacMan.exe (PacMan\\PacMan.exe)",
+      "env": {
+        "PATH": "C:/SDKs/SFML-3.0.2/bin;%PATH%"
+      }
+    }
+  ]
+}

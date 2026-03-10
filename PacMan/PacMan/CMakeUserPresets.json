@@ -1,0 +1,12 @@
+﻿{
+    "version": 3,
+    "configurePresets": [
+      {
+        "name": "x64-debug-user",
+        "displayName": "x64 Debug (User)",
+        "inherits": "x64-debug",
+        "cacheVariables": {
+        }
+      }
+    ]
+}
