@@ -5,7 +5,7 @@
 GraphicsComponent::GraphicsComponent()
 {
 	mShape.setFillColor(sf::Color::Red);
-	mShape.setRadius(50.f);
+	mShape.setRadius(8.f);
 }
 
 GraphicsComponent::~GraphicsComponent()

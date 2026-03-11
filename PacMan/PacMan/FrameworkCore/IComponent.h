@@ -10,6 +10,7 @@ enum class ComponentType
     GRAPHICS,
     SOUND,
     INPUT,
+    COLLIDER,
     //TO BE DEFINE
 };
 

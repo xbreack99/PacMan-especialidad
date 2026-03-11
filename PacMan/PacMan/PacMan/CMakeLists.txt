@@ -2,7 +2,7 @@
 find_package (SFML 3 REQUIRED COMPONENTS Graphics)
 find_package(imgui CONFIG REQUIRED)
 find_package(ImGui-SFML CONFIG REQUIRED)
-add_executable (PacMan "PacMan.h" "PacMan.cpp" "Main.cpp" "TileMap.h")
+add_executable (PacMan "PacMan.h" "PacMan.cpp" "Main.cpp" "TileMap.h" "TileMap.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET PacMan PROPERTY CXX_STANDARD 20)

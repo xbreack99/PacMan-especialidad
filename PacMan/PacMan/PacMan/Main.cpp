@@ -7,14 +7,17 @@
 #include "../FrameworkCore/InputComponent.h"
 #include "../FrameworkCore/RenderSystem.h"
 #include "../FrameworkCore/InputSystem.h"
-
+#include "TileMap.h"
+#include "SFML/System.hpp"
+#include "SFML/Window.hpp"
 using namespace std;
 
 int main()
 {
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "SFML window");
-	
+    sf::RenderWindow window(sf::VideoMode({ 16 * 21 * 2, (16 + 16 * 21) * 2 }), "Pac-Man", sf::Style::Close);
+    //Resizing the window.
+    window.setView(sf::View(sf::FloatRect(sf::Vector2f(0, 0),sf::Vector2f(16 * 21, 16 + 16 * 21) )));
     shared_ptr<Node> Pacman = make_shared<Node>();
 
 	Pacman->AddComponent(new TransformComponent());
@@ -37,6 +40,35 @@ int main()
     const float timePerFrame = 1.0f / 60.0f;
     sf::Clock clock;
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
+
+    std::array<std::string, 21> m_map = {
+
+    " ################### ",
+    " #........#........# ",
+    " #o##.###.#.###.##o# ",
+    " #.................# ",
+    " #.##.#.#####.#.##.# ",
+    " #....#...#...#....# ",
+    " ####.### # ###.#### ",
+    "    #.#   0   #.#    ",
+    "#####.# ##=## #.#####",
+    "     .  #123#  .     ",
+    "#####.# ##### #.#####",
+    "    #.#       #.#    ",
+    " ####.# ##### #.#### ",
+    " #........#........# ",
+    " #.##.###.#.###.##.# ",
+    " #o.#.....P.....#.o# ",
+    " ##.#.#.#####.#.#.## ",
+    " #....#...#...#....# ",
+    " #.######.#.######.# ",
+    " #.................# ",
+    " ################### "
+    };
+
+	TileMap tileMap;
+	auto gameMap = tileMap.ParseMapToGame(m_map);
+
     // Start the game loop
     while (window.isOpen())
     {
@@ -74,9 +106,9 @@ int main()
 
         // Clear screen
         window.clear();
+		tileMap.PrintMapToConsole(gameMap, window);
 		renderSystem.Update(0.f);
 		renderSystem.Render(window);
-        // Update the window
         window.display();
     }
 }
