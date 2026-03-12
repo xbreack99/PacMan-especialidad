@@ -3,7 +3,7 @@
 
 ColliderComponent::ColliderComponent()
 {
-	mBounds = sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(0, 0));
+	mBounds = sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(14, 14));
 }
 
 ColliderComponent::ColliderComponent(float x, float y, float width, float height)

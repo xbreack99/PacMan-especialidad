@@ -11,6 +11,8 @@ enum class ComponentType
     SOUND,
     INPUT,
     COLLIDER,
+    TILEMAP,
+	MOVEMENT,
     //TO BE DEFINE
 };
 

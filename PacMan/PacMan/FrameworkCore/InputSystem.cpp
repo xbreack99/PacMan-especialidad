@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include "InputComponent.h"
 #include "TransformComponent.h"
+#include "MovementComponent.h"
 
 InputSystem::~InputSystem()
 {
@@ -14,27 +15,31 @@ void InputSystem::Update(float deltaTime)
 	{
         auto transformComponent = node->GetComponent<TransformComponent>();
         auto inputComponent = node->GetComponent<InputComponent>();
+		auto movementComponent = node->GetComponent<MovementComponent>();
+
+        sf::Vector2f direction(0.f, 0.f);
 
         if (transformComponent && inputComponent)
         {
-            float speed = 300.0f; // Speed in pixels per second
 
             if (inputComponent->isKeyPressed(sf::Keyboard::Key::Up))
             {
-                transformComponent->position.y -= speed * deltaTime;
+                direction.y -= 1.f;
             }
             if (inputComponent->isKeyPressed(sf::Keyboard::Key::Down))
             {
-                transformComponent->position.y += speed * deltaTime;
+                direction.y += 1.f;
             }
             if (inputComponent->isKeyPressed(sf::Keyboard::Key::Left))
             {
-                transformComponent->position.x -= speed * deltaTime;
+                direction.x -= 1.f;
             }
             if (inputComponent->isKeyPressed(sf::Keyboard::Key::Right))
             {
-                transformComponent->position.x += speed * deltaTime;
+                direction.x += 1.f;
             }
         }
+
+		movementComponent->velocity = direction * movementComponent->speed;
 	}
 }

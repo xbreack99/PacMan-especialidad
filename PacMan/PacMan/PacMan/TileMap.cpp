@@ -1,6 +1,7 @@
 #include "TileMap.h"
 #include "../FrameworkCore/ColliderComponent.h"
 #include "../FrameworkCore/GraphicsComponent.h"
+#include "../FrameworkCore/TileMapComponent.h"
 
 TileMap::TileMap()
 {
@@ -8,6 +9,20 @@ TileMap::TileMap()
 
 TileMap::~TileMap()
 {
+
+}
+
+//do some checkings 
+void TileMap::Initialize(const MapGrid& mapSketch)
+{
+	mTileMapComponent = new TileMapComponent();
+	mTileMapComponent->mMap = mapSketch;
+	BuildMesh();
+}
+
+void TileMap::Draw(sf::RenderWindow& window)
+{
+	window.draw(mTileMapComponent->mVertexArray, mTileMapComponent->mTexture);
 }
 
 std::array<std::array<Cell, MAP_HEIGHT>, MAP_WIDTH> TileMap::ParseMapToGame(const std::array<std::string, MAP_HEIGHT>& map_sketch)
@@ -41,105 +56,66 @@ std::array<std::array<Cell, MAP_HEIGHT>, MAP_WIDTH> TileMap::ParseMapToGame(cons
 	return output_map;
 }
 
-void TileMap::PrintMapToConsole(const std::array<std::array<Cell, MAP_HEIGHT>, MAP_WIDTH>& i_map, sf::RenderWindow& i_window)
+void TileMap::BuildMesh()
 {
-	Node node;
-	node.AddComponent(new GraphicsComponent());
-	node.GetComponent<GraphicsComponent>()->mShape.setFillColor(sf::Color::Red);
-	
-	sf::Texture texture;
-	texture.loadFromFile("Map.png");
-	
-	sf::Sprite sprite(texture);
+	mTileMapComponent->mVertexArray.setPrimitiveType(sf::PrimitiveType::Triangles);
+	mTileMapComponent->mVertexArray.resize(MAP_WIDTH * MAP_HEIGHT * 6);
 
-	for (unsigned char x = 0; x < MAP_WIDTH; x++)
+	for (unsigned int x = 0; x < MAP_WIDTH; ++x)
 	{
-		for (unsigned char y = 0; y < MAP_HEIGHT; y++)
+		for (unsigned int y = 0; y < MAP_HEIGHT; ++y)
 		{
-			sprite.setPosition(sf::Vector2f((16 * x),(16 * y)));
-
-			switch (i_map[x][y])
-			{
-				case Cell::Door:
-				{
-					sprite.setTextureRect(sf::IntRect(sf::Vector2i(2 * 16, 16), sf::Vector2i(16, 16)));
-
-					i_window.draw(sprite);
-
-					break;
-				}
-				case Cell::Pellet:
-				{
-					sprite.setTextureRect(sf::IntRect(sf::Vector2i(0, 16), sf::Vector2i(16, 16)));
-
-					i_window.draw(sprite);
-
-					break;
-				}
-				case Cell::Energizer:
-				{
-					sprite.setTextureRect(sf::IntRect(sf::Vector2i(16, 16), sf::Vector2i(16, 16)));
-
-					i_window.draw(sprite);
-
-					break;
-				}
-				case Cell::Wall:
-				{
-					bool down = 0;
-					bool left = 0;
-					bool right = 0;
-					bool up = 0;
-
-					if (y < MAP_HEIGHT - 1)
-					{
-						if (Cell::Wall == i_map[x][1 + y])
-						{
-							down = 1;
-						}
-					}
-
-					//Since we have warp tunnels, we need to draw them as if they're connected.
-					if (0 < x)
-					{
-						if (Cell::Wall == i_map[x - 1][y])
-						{
-							left = 1;
-						}
-					}
-					else
-					{
-						left = 1;
-					}
-
-					if (x < MAP_WIDTH - 1)
-					{
-						if (Cell::Wall == i_map[1 + x][y])
-						{
-							right = 1;
-						}
-					}
-					else
-					{
-						right = 1;
-					}
-
-					if (0 < y)
-					{
-						if (Cell::Wall == i_map[x][y - 1])
-						{
-							up = 1;
-						}
-					}
-
-					//--------------------------------------------<         DISTRIBUTIVE PROPERTY!         >----------------------------
-					sprite.setTextureRect(sf::IntRect(sf::Vector2i(16 * (down + 2 * (left + 2 * (right + 2 * up))), 0),sf::Vector2i( 16, 16)));
-
-					i_window.draw(sprite);
-					break;
-				}
-
-			}
+			UpdateTile(x, y);
 		}
+	}
+}
+
+void TileMap::UpdateTile(int x, int y)
+{
+	const sf::IntRect textureRect = mTileMapComponent->GetTextureRectForCell(x, y);
+
+	const float worldX = static_cast<float>(x * TILE_SIZE);
+	const float worldY = static_cast<float>(y * TILE_SIZE);
+
+	const float texLeft = static_cast<float>(textureRect.position.x);
+	const float texTop = static_cast<float>(textureRect.position.y);
+	const float texRight = static_cast<float>(textureRect.position.x + textureRect.size.x);
+	const float texBottom = static_cast<float>(textureRect.position.y + textureRect.size.y);
+
+	const std::size_t baseIndex = (x + MAP_WIDTH * y) * 6;
+	sf::Vertex* triangle = &mTileMapComponent->mVertexArray[baseIndex];
+
+	if (mTileMapComponent->mMap[x][y] == Cell::Empty)
+	{
+		for (unsigned int i = 0; i < 6; ++i)
+		{
+			triangle[i].position = { worldX, worldY };
+			triangle[i].texCoords = { 0.f, 0.f };
+			triangle[i].color = sf::Color::Transparent;
+		}
+		return;
+	}
+
+	// Triángulo 1
+	triangle[0].position = { worldX, worldY };
+	triangle[1].position = { worldX + TILE_SIZE, worldY };
+	triangle[2].position = { worldX + TILE_SIZE, worldY + TILE_SIZE };
+
+	triangle[0].texCoords = { texLeft, texTop };
+	triangle[1].texCoords = { texRight, texTop };
+	triangle[2].texCoords = { texRight, texBottom };
+
+	// Triángulo 2
+	triangle[3].position = { worldX, worldY };
+	triangle[4].position = { worldX + TILE_SIZE, worldY + TILE_SIZE };
+	triangle[5].position = { worldX, worldY + TILE_SIZE };
+
+	triangle[3].texCoords = { texLeft, texTop };
+	triangle[4].texCoords = { texRight, texBottom };
+	triangle[5].texCoords = { texLeft, texBottom };
+
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		triangle[i].color = sf::Color::White;
 	}
 }

@@ -7,6 +7,10 @@
 #include "../FrameworkCore/InputComponent.h"
 #include "../FrameworkCore/RenderSystem.h"
 #include "../FrameworkCore/InputSystem.h"
+#include "../FrameworkCore/TileCollisionSystem.h"
+#include "../FrameworkCore/MovementComponent.h"
+#include "../FrameworkCore/TileMapComponent.h"
+#include "../FrameworkCore/ColliderComponent.h"
 #include "TileMap.h"
 #include "SFML/System.hpp"
 #include "SFML/Window.hpp"
@@ -20,8 +24,9 @@ int main()
     window.setView(sf::View(sf::FloatRect(sf::Vector2f(0, 0),sf::Vector2f(16 * 21, 16 + 16 * 21) )));
     shared_ptr<Node> Pacman = make_shared<Node>();
 
-	Pacman->AddComponent(new TransformComponent());
+	Pacman->AddComponent(new TransformComponent(2.f * TILE_SIZE + 2.f, 2.f * TILE_SIZE + 1.f));
     Pacman->AddComponent(new GraphicsComponent());
+	Pacman->AddComponent(new MovementComponent());
     RenderSystem renderSystem;
 
     InputSystem inputSystem;
@@ -31,6 +36,8 @@ int main()
     inputComponent->setKey(sf::Keyboard::Key::Down, false);
     inputComponent->setKey(sf::Keyboard::Key::Left, false);
     inputComponent->setKey(sf::Keyboard::Key::Right, false);
+
+    TileCollisionSystem tileCollisionSystem;
 
 	Pacman->AddComponent(inputComponent.get());
 
@@ -68,7 +75,10 @@ int main()
 
 	TileMap tileMap;
 	auto gameMap = tileMap.ParseMapToGame(m_map);
-
+	tileMap.Initialize(gameMap);
+	Pacman->AddComponent(tileMap.mTileMapComponent);
+	Pacman->AddComponent(new ColliderComponent());
+	tileCollisionSystem.AddNode(Pacman);
     // Start the game loop
     while (window.isOpen())
     {
@@ -102,11 +112,11 @@ int main()
         {
             timeSinceLastUpdate -= sf::seconds(timePerFrame);
             inputSystem.Update(timePerFrame);
+			tileCollisionSystem.Update(timePerFrame);
         }
 
-        // Clear screen
         window.clear();
-		tileMap.PrintMapToConsole(gameMap, window);
+		tileMap.Draw(window);
 		renderSystem.Update(0.f);
 		renderSystem.Render(window);
         window.display();

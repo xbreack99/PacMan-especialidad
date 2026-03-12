@@ -1,8 +1,11 @@
 ﻿#pragma once
 
 #include <iostream>
-
-class IComponent;
+#include "../FrameworkCore/Utilitys.h"
+#include <SFML/Graphics.hpp>
+class GraphicsComponent;
+class TransformComponent;
+class ColliderComponent;
 class Node;
 
 class PacMan
@@ -17,11 +20,16 @@ public:
 
 	void Draw();
 
+	void MovePacman(
+		sf::Vector2f& position,
+		sf::Vector2f velocity,
+		const std::array<std::array<Cell, MAP_HEIGHT>, MAP_WIDTH>& map);
+
 private:
-	unsigned int mDirection;
 	
 	Node* mPacMan;
 	
-	IComponent* mGraphicsComponent;
-	IComponent* mTransformComponent;
+	GraphicsComponent* mGraphicsComponent;
+	TransformComponent* mTransformComponent;
+	ColliderComponent* mColliderComponent;
 };
