@@ -5,10 +5,12 @@
 #include <array>
 #include <string>
 #include <iostream>
+#include <memory>
 
 using namespace std;
 
 class TileMapComponent;
+class Node;
 
 class TileMap
 {
@@ -29,6 +31,12 @@ public:
 
 	void UpdateTile(int x, int y);
 
+	bool TryConsumePickup(const sf::Vector2f& worldCenter, Cell& consumedCell);
+
+	std::shared_ptr<Node> GetNode() const { return mTileNode; }
+
 	TileMapComponent* mTileMapComponent;
 private:
+
+	std::shared_ptr<Node> mTileNode;
 };

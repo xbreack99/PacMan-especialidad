@@ -28,6 +28,8 @@ public:
 
 	bool IsBlockingCell(int x, int y) const;
 
+	bool TryConsumePickup(const sf::Vector2f& i_worldCenter, Cell& o_consumedCell);
+
 	std::array<std::array<Cell, MAP_HEIGHT>, MAP_WIDTH> mMap;
 	sf::Texture* mTexture;
 	sf::VertexArray mVertexArray;

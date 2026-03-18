@@ -12,7 +12,6 @@ public:
 
 	bool AddNode(std::shared_ptr<Node> node);
 
-protected:
 	std::vector<std::shared_ptr<Node>> mNodes;
 };
 

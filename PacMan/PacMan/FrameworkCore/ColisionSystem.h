@@ -17,5 +17,5 @@ public:
 
 private:
 
-	void OnCollision(Node* entityA, Node* entityB);
+	virtual void OnCollision(Node* entityA, Node* entityB);
 };

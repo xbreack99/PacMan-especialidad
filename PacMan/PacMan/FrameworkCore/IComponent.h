@@ -13,6 +13,7 @@ enum class ComponentType
     COLLIDER,
     TILEMAP,
 	MOVEMENT,
+	GHOST_AI,
     //TO BE DEFINE
 };
 

@@ -3,9 +3,13 @@
 #include <iostream>
 #include "../FrameworkCore/Utilitys.h"
 #include <SFML/Graphics.hpp>
+#include <memory>
+
 class GraphicsComponent;
 class TransformComponent;
 class ColliderComponent;
+class InputComponent;
+class MovementComponent;
 class Node;
 
 class PacMan
@@ -18,18 +22,26 @@ public:
 
 	void Update();
 
-	void Draw();
+	void InputEvent(sf::Keyboard::Key key, bool isPressed);
 
-	void MovePacman(
-		sf::Vector2f& position,
-		sf::Vector2f velocity,
-		const std::array<std::array<Cell, MAP_HEIGHT>, MAP_WIDTH>& map);
+	std::shared_ptr<Node> GetNode() const { return mPacMan; }
+
+	sf::Vector2f GetPosition() const;
+
+	sf::FloatRect GetBounds() const;
+
+	void AddScore(int points) { score += points; }
 
 private:
 	
-	Node* mPacMan;
+	std::shared_ptr<Node> mPacMan;
 	
+	int score = 0;
+
 	GraphicsComponent* mGraphicsComponent;
 	TransformComponent* mTransformComponent;
 	ColliderComponent* mColliderComponent;
+	InputComponent* mInputComponent;
+	MovementComponent* mMovementComponent;
+	
 };

@@ -2,6 +2,7 @@
 #include "../FrameworkCore/ColliderComponent.h"
 #include "../FrameworkCore/GraphicsComponent.h"
 #include "../FrameworkCore/TileMapComponent.h"
+#include "../FrameworkCore/Node.h"
 
 TileMap::TileMap()
 {
@@ -15,9 +16,13 @@ TileMap::~TileMap()
 //do some checkings 
 void TileMap::Initialize(const MapGrid& mapSketch)
 {
+	mTileNode = std::make_shared<Node>();
+	
 	mTileMapComponent = new TileMapComponent();
 	mTileMapComponent->mMap = mapSketch;
 	BuildMesh();
+
+	mTileNode->AddComponent(mTileMapComponent);
 }
 
 void TileMap::Draw(sf::RenderWindow& window)
@@ -56,6 +61,28 @@ std::array<std::array<Cell, MAP_HEIGHT>, MAP_WIDTH> TileMap::ParseMapToGame(cons
 	return output_map;
 }
 
+bool TileMap::TryConsumePickup(const sf::Vector2f& worldCenter, Cell& consumedCell)
+{
+	const int tileX = mTileMapComponent->ToTile(worldCenter.x);
+	const int tileY = mTileMapComponent->ToTile(worldCenter.y);
+
+	if (!mTileMapComponent->IsInsideMap(tileX, tileY))
+	{
+		return false;
+	}
+
+	Cell& cell = mTileMapComponent->mMap[tileX][tileY];
+
+	if (cell == Cell::Pellet || cell == Cell::Energizer)
+	{
+		consumedCell = cell;
+		cell = Cell::Empty;
+		UpdateTile(static_cast<unsigned int>(tileX), static_cast<unsigned int>(tileY));
+		return true;
+	}
+
+	return false;
+}
 void TileMap::BuildMesh()
 {
 	mTileMapComponent->mVertexArray.setPrimitiveType(sf::PrimitiveType::Triangles);
