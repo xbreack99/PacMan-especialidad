@@ -194,7 +194,43 @@ sf::Vector2i GhostAISystem::CalculateClydeTarget(GhostAIComponent* ghost) const
 
 sf::Vector2i GhostAISystem::ChooseNextDirection(GhostAIComponent* ghost, const sf::Vector2i& target) const
 {
-	return sf::Vector2i();
+	static const std::array<sf::Vector2i, 4> DIRS = { {
+			{  0, -1 }, // Up     (checked first, classic priority)
+			{ -1,  0 }, // Left
+			{  1,  0 }, // Right
+			{  0,  1 }, // Down
+		} };
+
+	if (ghost->mState == GhostState::Frightened)
+	{
+		std::array<sf::Vector2i, 4> legal;
+		int count = 0;
+		for (const auto& d : DIRS)
+		{
+			if (d == Opposite(ghost->mDirection)) continue;
+			if (CanMove(ghost->mCurrentTile + d)) legal[count++] = d;
+		}
+		if (count == 0) return Opposite(ghost->mDirection);
+		return legal[rand() % count];
+	}
+
+	sf::Vector2i best = ghost->mDirection;
+	int          bestDistSq = std::numeric_limits<int>::max();
+
+	for (const auto& d : DIRS)
+	{
+		if (d == Opposite(ghost->mDirection)) continue;
+		const sf::Vector2i next = ghost->mCurrentTile + d;
+		if (!CanMove(next)) continue;
+
+		const int dist = TileDistance(next, target);
+		if (dist < bestDistSq)
+		{
+			bestDistSq = dist;
+			best = d;
+		}
+	}
+	return best;
 }
 
 bool GhostAISystem::CanMove(const sf::Vector2i& tile) const

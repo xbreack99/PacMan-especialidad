@@ -22,7 +22,7 @@ void TileCollisionSystem::Update(float deltaTime)
         auto colliderComponent = node->GetComponent<ColliderComponent>();
 		auto tileMapComponent = node->GetComponent<TileMapComponent>();
 
-        if (!transformComponent || !movementComponent || !colliderComponent)
+        if (!transformComponent || !movementComponent || !colliderComponent || !tileMapComponent)
         {
             continue;
         }

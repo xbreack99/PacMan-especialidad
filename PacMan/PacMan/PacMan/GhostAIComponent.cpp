@@ -31,7 +31,6 @@ GhostAIComponent::GhostAIComponent(GhostType type) : mGhostType(type)
 		mSpawnTile = SPAWN_CLYDE;
 		break;
 	}
-
 	mCurrentTile = mSpawnTile;
 	mTargetTile = mScatterTargetTile;
 	mPosition = {

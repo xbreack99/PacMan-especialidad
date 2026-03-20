@@ -10,6 +10,8 @@ public:
 
 	virtual void Update(float deltaTime) = 0;
 
+	virtual void Update(float deltaTime, std::vector<Node*>& entities) {}
+	
 	bool AddNode(std::shared_ptr<Node> node);
 
 	std::vector<std::shared_ptr<Node>> mNodes;

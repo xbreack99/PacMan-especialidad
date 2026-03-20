@@ -10,8 +10,6 @@
 
 using std::map;
 
-
-//this will be like gameobject
 class Node
 {
     
@@ -20,7 +18,6 @@ class Node
 
     ~Node();
 
-   // Non-template overload for IComponent* to guarantee linkage
    void AddComponent(IComponent* component);
 
    template <typename T>
@@ -28,7 +25,6 @@ class Node
 
  public:
 
-   // map of components keyed by their type
    std::map<ComponentType, IComponent*> mComponents;
    
  private:

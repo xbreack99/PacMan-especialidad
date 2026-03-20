@@ -28,6 +28,8 @@ public:
 
 	sf::Vector2f GetPosition() const;
 
+	void SetPosition(int x, int y);
+
 	sf::FloatRect GetBounds() const;
 
 	void AddScore(int points) { score += points; }

@@ -4,10 +4,12 @@
 #include "GhostAISystem.h"
 #include <functional>
 
+class Node;
+
 class PacmanCollisionSystem : public ColisionSystem
 {
 public:
-	PacmanCollisionSystem() = default;
+	PacmanCollisionSystem();
 
 	void SetGhostAISystem(GhostAISystem* system) { mGhostAISystem = system; };
 
@@ -15,6 +17,9 @@ public:
 	std::function<void()> OnPacmanKilled;
 	std::function<void(Node*)> OnGhostEaten;
 
+	void Update(float deltaTime, std::vector<Node*>& entities);
+
+	void Update(float deltaTime) override;
 protected:
 	void OnCollision(Node* entityA, Node* entityB) override;
 

@@ -5,6 +5,7 @@
 #include "../FrameworkCore/MovementComponent.h"
 #include "../FrameworkCore/ColliderComponent.h"
 #include "../FrameworkCore/TileMapComponent.h"
+#include "../FrameworkCore/GraphicsComponent.h"
 #include "GhostAIComponent.h"
 #include "../FrameworkCore/Utilitys.h"
 #include "TileMap.h"
@@ -22,6 +23,7 @@ GameScene::GameScene(SceneManager& sceneManager, sf::RenderWindow& window) :
     mTileCollisionSystem = std::make_unique<TileCollisionSystem>();
     mCollisionSystem = std::make_unique<PacmanCollisionSystem>();
     mRenderSystem = std::make_unique<RenderSystem>();
+    mInputSystem = std::make_unique<InputSystem>();
 
     mCollisionSystem->SetGhostAISystem(mGhostAISystem.get());
 
@@ -38,7 +40,7 @@ GameScene::~GameScene()
 
 void GameScene::OnEnter()
 {
-    mFont.openFromFile("assets/fonts/arcade.ttf");
+    mFont.openFromFile("ARCADE_N.ttf");
 
     mScoreText.setFont(mFont);
     mScoreText.setCharacterSize(18);
@@ -63,9 +65,9 @@ void GameScene::OnExit()
     mGhostAISystem->mNodes.clear();
     mTileCollisionSystem->mNodes.clear();
     mCollisionSystem->mNodes.clear();
-
-
+    mRenderSystem->mNodes.clear();
     mTileCollisionSystem->SetTileMap(nullptr);
+    mInputSystem->mNodes.clear();
 
     for (Node* n : mEntities) delete n;
     mEntities.clear();
@@ -85,7 +87,7 @@ void GameScene::ResetEntities()
     mTileCollisionSystem->SetTileMap(nullptr);
     mCollisionSystem->mNodes.clear();
 
-    for (Node* n : mEntities) delete n;
+    //for (Node* n : mEntities) delete n;
     mEntities.clear();
     mPacmanNode = nullptr;
     mBlinkyNode = nullptr;
@@ -104,16 +106,6 @@ void GameScene::ResetEntities()
     mGhostAISystem->SetTileMap(mTileMapNode->GetNode()->GetComponent<TileMapComponent>());
 
     mPelletsLeft = 0;
-    auto* tileMap = mTileMapNode->GetNode()->GetComponent<TileMapComponent>();
-    if (tileMap)
-    {
-        for (int x = 0; x < MAP_WIDTH; ++x)
-            for (int y = 0; y < MAP_HEIGHT; ++y)
-                if (tileMap->mMap[x][y] == Cell::Pellet ||
-                    tileMap->mMap[x][y] == Cell::Energizer)
-                    ++mPelletsLeft;
-    }
-
     mPacmanDead = false;
     mDeathTimer = 0.f;
 }
@@ -144,38 +136,28 @@ void GameScene::BuildMap()
 " #.................# ",
 " ################### "
     };
+    
+    mTileMapNode = new TileMap();
+    auto gameMap = mTileMapNode->ParseMapToGame(m_map);
+    mTileMapNode->Initialize(gameMap);
 
-    TileMap tileMap;
-    TileMap tileMap;
-    auto gameMap = tileMap.ParseMapToGame(m_map);
-    tileMap.Initialize(gameMap);
+    mEntities.push_back(mTileMapNode->GetNode().get());
 
-    mEntities.push_back(tileMap.GetNode().get());
-    mTileMapNode = &tileMap;
-
-    mTileCollisionSystem->SetTileMap(tileMap.mTileMapComponent);
+    mTileCollisionSystem->SetTileMap(mTileMapNode->mTileMapComponent);
 }
 
 void GameScene::BuildPacman()
 {
-    PacMan player;
+    mPacmanNode = new PacMan();
+    mEntities.push_back(mPacmanNode->GetNode().get());
+    auto startPosition = mTileMapNode->mPlayerStartposition;
+    mPacmanNode->GetNode()->AddComponent(mTileMapNode->GetNode()->GetComponent<TileMapComponent>());
+    mPacmanNode->SetPosition(startPosition.x, startPosition.y);
 
-    auto* transform = new TransformComponent(13.f * TILE_SIZE, 23.f * TILE_SIZE);
-    auto* movement = new MovementComponent();
-    movement->speed = 100.f;
-    auto* collider = new ColliderComponent(1.f, 1.f, 14.f, 14.f);
-
-    player.GetNode()->AddComponent(transform);
-    player.GetNode()->AddComponent(movement);
-    player.GetNode()->AddComponent(collider);
-
-
-    mEntities.push_back(player.GetNode().get());
-    mPacmanNode = &player;
-
-    mTileCollisionSystem->mNodes.push_back(player.GetNode());
-    mCollisionSystem->mNodes.push_back(player.GetNode());
-    mRenderSystem->AddNode(player.GetNode());
+    mTileCollisionSystem->AddNode(mPacmanNode->GetNode());
+    mCollisionSystem->AddNode(mPacmanNode->GetNode());
+    mRenderSystem->AddNode(mPacmanNode->GetNode());
+    mInputSystem->AddNode(mPacmanNode->GetNode());
 }
 
 void GameScene::BuildGhost(GhostType type)
@@ -184,16 +166,39 @@ void GameScene::BuildGhost(GhostType type)
     auto* ai = new GhostAIComponent(type);
     auto* transform = new TransformComponent(ai->mPosition.x, ai->mPosition.y);
     auto* movement = new MovementComponent();
+    auto* graphics = new GraphicsComponent();
     movement->speed = ai->mSpeed;
     auto* collider = new ColliderComponent(1.f, 1.f, 14.f, 14.f);
     collider->isTrigger = true;
 
+    graphics->mShape.setRadius(8.f);
+    switch (type)
+    {
+    case GhostType::Blinky:
+        graphics->mShape.setFillColor(sf::Color::Red);
+        break;
+    case GhostType::Pinky:
+        graphics->mShape.setFillColor(sf::Color::Magenta);
+        break;
+    case GhostType::Inky:
+        graphics->mShape.setFillColor(sf::Color::Blue);
+        break;
+    case GhostType::Clyde:
+        graphics->mShape.setFillColor(sf::Color::Green);
+        break;
+    default:
+        break;
+    }
+    
+
+    node->AddComponent(graphics);
     node->AddComponent(ai);
     node->AddComponent(transform);
     node->AddComponent(movement);
     node->AddComponent(collider);
 
     mEntities.push_back(node.get());
+    mRenderSystem->mNodes.push_back(node);
     mGhostAISystem->mNodes.push_back(node);
     mCollisionSystem->mNodes.push_back(node);
 
@@ -203,26 +208,22 @@ void GameScene::BuildGhost(GhostType type)
 void GameScene::HandleEvent(const sf::Event& event)
 {
     if (const auto* key = event.getIf<sf::Event::KeyPressed>())
+    {
         if (key->code == sf::Keyboard::Key::Escape)
+        {
             mSceneManager.PushScene(SCENE_TYPE::PAUSE);
-}
+        }
+        mPacmanNode->InputEvent(key->code, true);
+    }
+    else if (event.is<sf::Event::Closed>())
+    {
+        mWindow.close();
+    }
 
-void GameScene::HandlePacmanInput()
-{
-    //if (!mPacmanNode || mPacmanDead) return;
-    //auto* movement = mPacmanNode->GetComponent<MovementComponent>();
-    //if (!movement) return;
-
-    //const float spd = movement->speed;
-    //sf::Vector2f vel = { 0.f, 0.f };
-
-    //using Key = sf::Keyboard::Key;
-    //if (sf::Keyboard::isKeyPressed(Key::Left) || sf::Keyboard::isKeyPressed(Key::A)) vel = { -spd, 0.f };
-    //else if (sf::Keyboard::isKeyPressed(Key::Right) || sf::Keyboard::isKeyPressed(Key::D)) vel = { spd, 0.f };
-    //else if (sf::Keyboard::isKeyPressed(Key::Up) || sf::Keyboard::isKeyPressed(Key::W)) vel = { 0.f, -spd };
-    //else if (sf::Keyboard::isKeyPressed(Key::Down) || sf::Keyboard::isKeyPressed(Key::S)) vel = { 0.f,  spd };
-
-    //movement->velocity = vel;
+    else if (const auto* keyReleased = event.getIf<sf::Event::KeyReleased>())
+    {
+        mPacmanNode->InputEvent(keyReleased->code, false);
+    }
 }
 
 void GameScene::Update(float deltaTime)
@@ -248,11 +249,11 @@ void GameScene::Update(float deltaTime)
         return;
     }
 
-    HandlePacmanInput();
-    mTileCollisionSystem->Update(deltaTime);
+    mInputSystem->Update(deltaTime);
     mGhostAISystem->Update(deltaTime);
     mCollisionSystem->Update(deltaTime, mEntities);
-    mRenderSystem->Update(0.f);
+    mRenderSystem->Update(deltaTime);
+    mTileCollisionSystem->Update(deltaTime);
     CheckPacmanPickups();
     CheckWin();
     UpdateHUD();
@@ -262,13 +263,12 @@ void GameScene::CheckPacmanPickups()
 {
     if (!mPacmanNode) return;
     auto* transform = mPacmanNode->GetNode()->GetComponent<TransformComponent>();
-    auto* tileMap = mTileMapNode->GetNode()->GetComponent<TileMapComponent>();
-    if (!transform || !tileMap) return;
+    if (!transform) return;
 
     const sf::Vector2f center = transform->position + sf::Vector2f(7.f, 7.f);
     Cell consumed = Cell::Empty;
 
-    if (tileMap->TryConsumePickup(center, consumed))
+    if (mTileMapNode->TryConsumePickup(center, consumed))
     {
         switch (consumed)
         {
@@ -288,12 +288,12 @@ void GameScene::CheckPacmanPickups()
 
 void GameScene::KillPacman()
 {
-    if (mPacmanDead) return;
-    mPacmanDead = true;
-    mDeathTimer = DEATH_DELAY;
-    --mLives;
-    if (auto* m = mPacmanNode->GetNode()->GetComponent<MovementComponent>())
-        m->velocity = { 0.f, 0.f };
+    //if (mPacmanDead) return;
+    //mPacmanDead = true;
+    //mDeathTimer = DEATH_DELAY;
+    //--mLives;
+    //if (auto* m = mPacmanNode->GetNode()->GetComponent<MovementComponent>())
+    //    m->velocity = { 0.f, 0.f };
 }
 
 void GameScene::CheckWin()
@@ -315,15 +315,6 @@ void GameScene::Render()
     {
         mTileMapNode->Draw(mWindow);
     }
-    
-    //if (mTileMapNode)
-    //{
-    //    auto* tileMap = mTileMapNode->GetComponent<TileMapComponent>();
-    //    if (tileMap && tileMap->mTexture)
-    //        mWindow.draw(tileMap->mVertexArray, tileMap->mTexture);
-    //}
-
-    // TODO: draw sprites for Pac-Man and ghosts via a GraphicsComponent/RenderSystem
     
     mRenderSystem->Render(mWindow);
     mWindow.draw(mScoreText);

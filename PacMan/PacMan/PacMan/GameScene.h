@@ -8,6 +8,7 @@
 #include <vector>
 #include "PacmanCollisionSystem.h"
 #include "../FrameworkCore/RenderSystem.h"
+#include "../FrameworkCore/InputSystem.h"
 
 class Node;
 class TileMap;
@@ -33,7 +34,6 @@ private:
 	void BuildGhost(GhostType type);
 	void ResetEntities();
 
-	void HandlePacmanInput();
 	void CheckPacmanPickups();
 	void KillPacman();
 	void CheckWin();
@@ -48,6 +48,7 @@ private:
 	std::unique_ptr<TileCollisionSystem> mTileCollisionSystem;
 	std::unique_ptr<PacmanCollisionSystem> mCollisionSystem;
 	std::unique_ptr<RenderSystem> mRenderSystem;
+	std::unique_ptr<InputSystem> mInputSystem;
 
 
 	sf::Font mFont;

@@ -36,6 +36,9 @@ public:
 	std::shared_ptr<Node> GetNode() const { return mTileNode; }
 
 	TileMapComponent* mTileMapComponent;
+
+	sf::Vector2i mPlayerStartposition;
+
 private:
 
 	std::shared_ptr<Node> mTileNode;

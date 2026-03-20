@@ -10,5 +10,5 @@ enum class Cell
 	Empty,
 	Energizer,
 	Pellet,
-	Wall
+	Wall,
 };

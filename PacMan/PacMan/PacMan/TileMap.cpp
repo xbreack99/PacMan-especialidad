@@ -52,6 +52,10 @@ std::array<std::array<Cell, MAP_HEIGHT>, MAP_WIDTH> TileMap::ParseMapToGame(cons
 			case '=':
 				output_map[x][y] = Cell::Door;
 				break;
+			case 'P':
+				output_map[x][y] = Cell::Empty;
+				mPlayerStartposition = { TILE_SIZE * x, TILE_SIZE * y };
+				break;
 			default:
 				output_map[x][y] = Cell::Empty;
 				break;

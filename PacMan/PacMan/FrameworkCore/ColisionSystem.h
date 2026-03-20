@@ -13,7 +13,7 @@ public:
 
 	~ColisionSystem();
 
-	void Update(float deltaTime , std::vector<Node*>& entities);
+	virtual void Update(float deltaTime , std::vector<Node*>& entities) override;
 
 private:
 

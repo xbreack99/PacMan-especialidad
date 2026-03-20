@@ -145,7 +145,6 @@ sf::IntRect TileMapComponent::GetTextureRectForCell(int x, int y)
     {
         return sf::IntRect(sf::Vector2i(TILE_SIZE, TILE_SIZE), sf::Vector2i(TILE_SIZE, TILE_SIZE));
     }
-
     case Cell::Wall:
     {
         bool down = false;

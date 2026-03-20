@@ -43,9 +43,9 @@ public:
 	sf::Vector2f mPosition;
 	bool isMoving = false;
 
-	float mSpeed = 0.f;
-	float mFrightenedSpeed = 0.f;
-	float mEatenSpeed = 0.f;
+	float mSpeed = 10.f;
+	float mFrightenedSpeed = 10.f;
+	float mEatenSpeed = 10.f;
 
 	int mPhaseIndex = 0;
 	float mPhaseTimer = 0.f;
