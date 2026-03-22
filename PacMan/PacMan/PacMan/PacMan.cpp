@@ -39,10 +39,16 @@ PacMan::PacMan()
 
 	mTransformComponent->SetPosition(10, 10);
 	mColliderComponent->mBounds.size = sf::Vector2f(14.f, 14.f);
+	mPacMan->mType = NodeType::Player;
 }
 
 PacMan::~PacMan()
 {
+	delete mGraphicsComponent;
+	delete mTransformComponent;
+	delete mColliderComponent;
+	delete mInputComponent;
+	delete mMovementComponent;
 
 }
 

@@ -14,12 +14,18 @@ void PacmanCollisionSystem::OnCollision(Node* entityA, Node* entityB)
     if (entityA->GetComponent<GhostAIComponent>())
     {
         ghostNode = entityA;
-        pacmanNode = entityB;
+        if (NodeType::Player == entityB->mType)
+        {
+            pacmanNode = entityB;
+        }
     }
     else if (entityB->GetComponent<GhostAIComponent>())
     {
         ghostNode = entityB;
-        pacmanNode = entityA;
+        if (NodeType::Player == entityA->mType)
+        {
+            pacmanNode = entityA;
+        }
     }
 
     
@@ -38,8 +44,4 @@ void PacmanCollisionSystem::OnCollision(Node* entityA, Node* entityB)
     {
         if (OnPacmanKilled) OnPacmanKilled();
     }
-}
-
-void PacmanCollisionSystem::Update(float deltaTime)
-{
 }

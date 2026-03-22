@@ -9,6 +9,12 @@
 #include "IComponent.h"
 
 using std::map;
+enum class NodeType
+{
+    Player,
+    IA,
+    Wall,
+};
 
 class Node
 {
@@ -16,7 +22,7 @@ class Node
  public:
     Node();
 
-    ~Node();
+    virtual ~Node();
 
    void AddComponent(IComponent* component);
 
@@ -27,8 +33,11 @@ class Node
 
    std::map<ComponentType, IComponent*> mComponents;
    
- private:
     uint32_t id;
+
+    NodeType mType;
+
+ private:
 };
 
 template <typename T>

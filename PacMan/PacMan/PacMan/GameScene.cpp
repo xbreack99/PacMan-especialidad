@@ -31,6 +31,8 @@ GameScene::GameScene(SceneManager& sceneManager, sf::RenderWindow& window) :
     mCollisionSystem->OnGhostEaten = [this](Node*) {
 		mScore += GHOST_SCORE;
 		};
+
+    mModManager.LoadMod("SpeedBoost.dll");
 }
 
 GameScene::~GameScene()
@@ -63,13 +65,15 @@ void GameScene::OnExit()
 {
 
     mGhostAISystem->mNodes.clear();
+    mGhostAISystem->SetPacman(nullptr);
+    mGhostAISystem->SetBlinky(nullptr);
+    mGhostAISystem->SetTileMap(nullptr);
     mTileCollisionSystem->mNodes.clear();
+    mTileCollisionSystem->SetTileMap(nullptr);
     mCollisionSystem->mNodes.clear();
     mRenderSystem->mNodes.clear();
-    mTileCollisionSystem->SetTileMap(nullptr);
     mInputSystem->mNodes.clear();
 
-    for (Node* n : mEntities) delete n;
     mEntities.clear();
     mPacmanNode = nullptr;
     mBlinkyNode = nullptr;
@@ -86,8 +90,9 @@ void GameScene::ResetEntities()
     mTileCollisionSystem->mNodes.clear();
     mTileCollisionSystem->SetTileMap(nullptr);
     mCollisionSystem->mNodes.clear();
+    mRenderSystem->mNodes.clear();
+    mInputSystem->mNodes.clear();
 
-    //for (Node* n : mEntities) delete n;
     mEntities.clear();
     mPacmanNode = nullptr;
     mBlinkyNode = nullptr;
@@ -158,6 +163,11 @@ void GameScene::BuildPacman()
     mCollisionSystem->AddNode(mPacmanNode->GetNode());
     mRenderSystem->AddNode(mPacmanNode->GetNode());
     mInputSystem->AddNode(mPacmanNode->GetNode());
+
+    mCtx.pacmanMovement = mPacmanNode->GetNode()->GetComponent<MovementComponent>();
+    mCtx.ghostAISystem = mGhostAISystem.get();
+    mCtx.lives = &mLives;
+    mCtx.score = &mScore;
 }
 
 void GameScene::BuildGhost(GhostType type)
@@ -213,6 +223,15 @@ void GameScene::HandleEvent(const sf::Event& event)
         {
             mSceneManager.PushScene(SCENE_TYPE::PAUSE);
         }
+        switch (key->code)
+        {
+        case sf::Keyboard::Key::F1 : 
+            mModManager.ToogleMod(0, mCtx); 
+            break;
+        default:
+            break;
+        }
+
         mPacmanNode->InputEvent(key->code, true);
     }
     else if (event.is<sf::Event::Closed>())
@@ -254,6 +273,7 @@ void GameScene::Update(float deltaTime)
     mCollisionSystem->Update(deltaTime, mEntities);
     mRenderSystem->Update(deltaTime);
     mTileCollisionSystem->Update(deltaTime);
+    mModManager.Update(deltaTime, mCtx);
     CheckPacmanPickups();
     CheckWin();
     UpdateHUD();
@@ -288,12 +308,12 @@ void GameScene::CheckPacmanPickups()
 
 void GameScene::KillPacman()
 {
-    //if (mPacmanDead) return;
-    //mPacmanDead = true;
-    //mDeathTimer = DEATH_DELAY;
-    //--mLives;
-    //if (auto* m = mPacmanNode->GetNode()->GetComponent<MovementComponent>())
-    //    m->velocity = { 0.f, 0.f };
+    if (mPacmanDead) return;
+    mPacmanDead = true;
+    mDeathTimer = DEATH_DELAY;
+    --mLives;
+    if (auto* m = mPacmanNode->GetNode()->GetComponent<MovementComponent>())
+        m->velocity = { 0.f, 0.f };
 }
 
 void GameScene::CheckWin()

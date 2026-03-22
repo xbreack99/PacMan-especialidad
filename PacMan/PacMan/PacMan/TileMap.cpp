@@ -10,7 +10,7 @@ TileMap::TileMap()
 
 TileMap::~TileMap()
 {
-
+	delete mTileMapComponent;
 }
 
 //do some checkings 

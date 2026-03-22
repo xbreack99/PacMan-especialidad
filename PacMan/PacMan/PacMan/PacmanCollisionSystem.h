@@ -17,9 +17,6 @@ public:
 	std::function<void()> OnPacmanKilled;
 	std::function<void(Node*)> OnGhostEaten;
 
-	void Update(float deltaTime, std::vector<Node*>& entities);
-
-	void Update(float deltaTime) override;
 protected:
 	void OnCollision(Node* entityA, Node* entityB) override;
 

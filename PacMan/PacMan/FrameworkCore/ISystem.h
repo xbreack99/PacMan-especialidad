@@ -8,9 +8,9 @@ class ISystem
 public:
 	virtual ~ISystem() = 0;
 
-	virtual void Update(float deltaTime) = 0;
+	virtual void Update(float deltaTime) {};
 
-	virtual void Update(float deltaTime, std::vector<Node*>& entities) {}
+	virtual void Update(float deltaTime, std::vector<Node*>& entities) {};
 	
 	bool AddNode(std::shared_ptr<Node> node);
 

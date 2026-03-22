@@ -11,7 +11,7 @@ class ColisionSystem : public ISystem
 public:
 	ColisionSystem();
 
-	~ColisionSystem();
+	virtual ~ColisionSystem();
 
 	virtual void Update(float deltaTime , std::vector<Node*>& entities) override;
 

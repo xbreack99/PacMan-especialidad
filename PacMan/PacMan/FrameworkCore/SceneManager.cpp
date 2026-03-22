@@ -1,7 +1,6 @@
 #include "SceneManager.h"
 #include <SFML/Graphics.hpp>
 
-
 SceneManager::SceneManager(sf::RenderWindow& window) : mWindow(window)
 {
 }

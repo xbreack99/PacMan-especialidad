@@ -7,8 +7,10 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include "PacmanCollisionSystem.h"
+#include "../FrameworkCore/ColisionSystem.h"
 #include "../FrameworkCore/RenderSystem.h"
 #include "../FrameworkCore/InputSystem.h"
+#include "../MODS/ModManager.h"
 
 class Node;
 class TileMap;
@@ -67,4 +69,7 @@ private:
 	static constexpr int PELLET_SCORE = 10;
 	static constexpr int   ENERGIZER_SCORE = 50;
 	static constexpr int   GHOST_SCORE = 200;
+
+	ModManager mModManager;
+	ModContext mCtx;
 };
