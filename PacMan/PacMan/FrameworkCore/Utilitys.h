@@ -6,9 +6,9 @@ constexpr unsigned char TILE_SIZE = 16;
 
 enum class Cell
 {
-	Door,
 	Empty,
-	Energizer,
-	Pellet,
 	Wall,
+	Pellet,
+	Energizer,
+	Door,
 };

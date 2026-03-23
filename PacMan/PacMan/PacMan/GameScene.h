@@ -15,6 +15,7 @@
 class Node;
 class TileMap;
 class PacMan;
+class Ghost;
 
 class GameScene : public IScene
 {
@@ -33,7 +34,7 @@ private:
 
 	void BuildMap();
 	void BuildPacman();
-	void BuildGhost(GhostType type);
+	void BuildGhost();
 	void ResetEntities();
 
 	void CheckPacmanPickups();
@@ -43,7 +44,10 @@ private:
 
 	std::vector<Node*> mEntities;
 	PacMan* mPacmanNode = nullptr;
-	Node* mBlinkyNode = nullptr;
+	Ghost* mGhostB = nullptr;
+	Ghost* mGhostP = nullptr;
+	Ghost* mGhostI = nullptr;
+	Ghost* mGhostC = nullptr;
 	TileMap* mTileMapNode = nullptr;
 
 	std::unique_ptr<GhostAISystem> mGhostAISystem;

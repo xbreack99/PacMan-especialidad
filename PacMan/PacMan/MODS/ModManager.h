@@ -4,7 +4,12 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <Windows.h>
+
+#ifdef WIN32
+	#include <Windows.h>
+#else
+#include <dlfcn.h>
+#endif
 
 using DestroyModFn = void(*)(IMod*);
 using CreateModFn = IMod * (*)();

@@ -12,6 +12,7 @@
 #include "PacMan.h"
 #include <memory.h>
 #include <string>
+#include "Ghost.h"
 #include "GameOverScene.h"
 
 GameScene::GameScene(SceneManager& sceneManager, sf::RenderWindow& window) :
@@ -76,7 +77,10 @@ void GameScene::OnExit()
 
     mEntities.clear();
     mPacmanNode = nullptr;
-    mBlinkyNode = nullptr;
+    mGhostB = nullptr;
+    mGhostP = nullptr;
+    mGhostI = nullptr;
+    mGhostC = nullptr;
     mTileMapNode = nullptr;
 }
 
@@ -95,19 +99,19 @@ void GameScene::ResetEntities()
 
     mEntities.clear();
     mPacmanNode = nullptr;
-    mBlinkyNode = nullptr;
+    mGhostB = nullptr;
+    mGhostP = nullptr;
+    mGhostI = nullptr;
+    mGhostC = nullptr;
     mTileMapNode = nullptr;
 
     BuildMap();
     BuildPacman();
-    BuildGhost(GhostType::Blinky);
-    BuildGhost(GhostType::Pinky);
-    BuildGhost(GhostType::Inky);
-    BuildGhost(GhostType::Clyde);
+    BuildGhost();
 
 
     mGhostAISystem->SetPacman(mPacmanNode->GetNode().get());
-    mGhostAISystem->SetBlinky(mBlinkyNode);
+    mGhostAISystem->SetBlinky(mGhostB->GetNode().get());
     mGhostAISystem->SetTileMap(mTileMapNode->GetNode()->GetComponent<TileMapComponent>());
 
     mPelletsLeft = 0;
@@ -118,33 +122,7 @@ void GameScene::ResetEntities()
 
 void GameScene::BuildMap()
 {
-    std::array<std::string, 21> m_map = {
-" ################### ",
-" #........#........# ",
-" #o##.###.#.###.##o# ",
-" #.................# ",
-" #.##.#.#####.#.##.# ",
-" #....#...#...#....# ",
-" ####.### # ###.#### ",
-"    #.#   0   #.#    ",
-"#####.# ##=## #.#####",
-"     .  #123#  .     ",
-"#####.# ##### #.#####",
-"    #.#       #.#    ",
-" ####.# ##### #.#### ",
-" #........#........# ",
-" #.##.###.#.###.##.# ",
-" #o.#.....P.....#.o# ",
-" ##.#.#.#####.#.#.## ",
-" #....#...#...#....# ",
-" #.######.#.######.# ",
-" #.................# ",
-" ################### "
-    };
-    
     mTileMapNode = new TileMap();
-    auto gameMap = mTileMapNode->ParseMapToGame(m_map);
-    mTileMapNode->Initialize(gameMap);
 
     mEntities.push_back(mTileMapNode->GetNode().get());
 
@@ -170,49 +148,40 @@ void GameScene::BuildPacman()
     mCtx.score = &mScore;
 }
 
-void GameScene::BuildGhost(GhostType type)
+void GameScene::BuildGhost()
 {
-    std::shared_ptr<Node> node = std::make_shared<Node>();
-    auto* ai = new GhostAIComponent(type);
-    auto* transform = new TransformComponent(ai->mPosition.x, ai->mPosition.y);
-    auto* movement = new MovementComponent();
-    auto* graphics = new GraphicsComponent();
-    movement->speed = ai->mSpeed;
-    auto* collider = new ColliderComponent(1.f, 1.f, 14.f, 14.f);
-    collider->isTrigger = true;
+  
+    mGhostB = new Ghost(GhostType::Blinky);
+    mGhostI = new Ghost(GhostType::Inky);
+    mGhostC = new Ghost(GhostType::Clyde);
+    mGhostP = new Ghost(GhostType::Pinky);
 
-    graphics->mShape.setRadius(8.f);
-    switch (type)
-    {
-    case GhostType::Blinky:
-        graphics->mShape.setFillColor(sf::Color::Red);
-        break;
-    case GhostType::Pinky:
-        graphics->mShape.setFillColor(sf::Color::Magenta);
-        break;
-    case GhostType::Inky:
-        graphics->mShape.setFillColor(sf::Color::Blue);
-        break;
-    case GhostType::Clyde:
-        graphics->mShape.setFillColor(sf::Color::Green);
-        break;
-    default:
-        break;
-    }
+    mEntities.push_back(mGhostB->GetNode().get());
+    mEntities.push_back(mGhostI->GetNode().get());
+    mEntities.push_back(mGhostC->GetNode().get());
+    mEntities.push_back(mGhostP->GetNode().get());
+
+
+    mRenderSystem->mNodes.push_back(mGhostB->GetNode());
+    mRenderSystem->mNodes.push_back(mGhostI->GetNode());
+    mRenderSystem->mNodes.push_back(mGhostC->GetNode());
+    mRenderSystem->mNodes.push_back(mGhostP->GetNode());
     
+    mGhostAISystem->mNodes.push_back(mGhostB->GetNode());
+    mGhostAISystem->mNodes.push_back(mGhostI->GetNode());
+    mGhostAISystem->mNodes.push_back(mGhostC->GetNode());
+    mGhostAISystem->mNodes.push_back(mGhostP->GetNode());
+    
+    mCollisionSystem->mNodes.push_back(mGhostB->GetNode());
+    mCollisionSystem->mNodes.push_back(mGhostI->GetNode());
+    mCollisionSystem->mNodes.push_back(mGhostC->GetNode());
+    mCollisionSystem->mNodes.push_back(mGhostP->GetNode());
+    
+    mTileCollisionSystem->AddNode(mGhostB->GetNode());
+    mTileCollisionSystem->AddNode(mGhostI->GetNode());
+    mTileCollisionSystem->AddNode(mGhostC->GetNode());
+    mTileCollisionSystem->AddNode(mGhostP->GetNode());
 
-    node->AddComponent(graphics);
-    node->AddComponent(ai);
-    node->AddComponent(transform);
-    node->AddComponent(movement);
-    node->AddComponent(collider);
-
-    mEntities.push_back(node.get());
-    mRenderSystem->mNodes.push_back(node);
-    mGhostAISystem->mNodes.push_back(node);
-    mCollisionSystem->mNodes.push_back(node);
-
-    if (type == GhostType::Blinky) mBlinkyNode = node.get();
 }
 
 void GameScene::HandleEvent(const sf::Event& event)
@@ -266,6 +235,11 @@ void GameScene::Update(float deltaTime)
             UpdateHUD();
         }
         return;
+    }
+
+    if (auto* transform = mPacmanNode->GetNode()->GetComponent<TransformComponent>())
+    {
+        mTileMapNode->TryTunnel(transform->position);
     }
 
     mInputSystem->Update(deltaTime);

@@ -18,6 +18,9 @@ public:
 	using MapGrid = std::array<std::array<Cell, MAP_HEIGHT>, MAP_WIDTH>;
 
 	TileMap();
+	
+	TileMap(const std::string& path);
+
 
 	~TileMap();
 	
@@ -33,6 +36,10 @@ public:
 
 	bool TryConsumePickup(const sf::Vector2f& worldCenter, Cell& consumedCell);
 
+	bool TryTunnel(sf::Vector2f& position) const;
+
+	bool LoadMapFromFile(const std::string& path, MapGrid& outGrid);
+
 	std::shared_ptr<Node> GetNode() const { return mTileNode; }
 
 	TileMapComponent* mTileMapComponent;
@@ -42,4 +49,8 @@ public:
 private:
 
 	std::shared_ptr<Node> mTileNode;
+
+	std::vector<int> mTunnelRows;
+
+	void DetectTunnelRows();
 };

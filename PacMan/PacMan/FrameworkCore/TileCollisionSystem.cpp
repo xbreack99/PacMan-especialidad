@@ -34,5 +34,7 @@ void TileCollisionSystem::Update(float deltaTime)
             colliderComponent->mBounds.size,
             frameDisplacement
         );
+
+        movementComponent->velocity = frameDisplacement / deltaTime;
     }
 }

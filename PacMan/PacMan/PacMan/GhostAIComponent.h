@@ -31,7 +31,7 @@ public:
 
 	GhostState mState = GhostState::Scatter;
 
-	float mFrightenedTimer = 0.f;
+	float mFrightenedTimer = 20.f;
 	bool isFrightened = false;
 
 	sf::Vector2i mTargetTile;
@@ -43,9 +43,9 @@ public:
 	sf::Vector2f mPosition;
 	bool isMoving = false;
 
-	float mSpeed = 10.f;
-	float mFrightenedSpeed = 10.f;
-	float mEatenSpeed = 10.f;
+	float mSpeed = 20.f;
+	float mFrightenedSpeed = 20.f;
+	float mEatenSpeed = 50.f;
 
 	int mPhaseIndex = 0;
 	float mPhaseTimer = 0.f;

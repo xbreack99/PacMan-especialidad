@@ -3,9 +3,50 @@
 #include "../FrameworkCore/GraphicsComponent.h"
 #include "../FrameworkCore/TileMapComponent.h"
 #include "../FrameworkCore/Node.h"
+#include <fstream>
+#include <string>
+#include <iostream>
 
 TileMap::TileMap()
 {
+	std::array<std::string, 21> m_map = {
+
+		" ################### ",
+		" #........#........# ",
+		" #o##.###.#.###.##o# ",
+		" #.................# ",
+		" #.##.#.#####.#.##.# ",
+		" #....#...#...#....# ",
+		" ####.### # ###.#### ",
+		"    #.#   0   #.#    ",
+		"#####.# ##=## #.#####",
+		"     .  #123#  .     ",
+		"#####.# ##### #.#####",
+		"    #.#       #.#    ",
+		" ####.# ##### #.#### ",
+		" #........#........# ",
+		" #.##.###.#.###.##.# ",
+		" #o.#.....P.....#.o# ",
+		" ##.#.#.#####.#.#.## ",
+		" #....#...#...#....# ",
+		" #.######.#.######.# ",
+		" #.................# ",
+		" ################### "
+	};
+	auto gameMap = ParseMapToGame(m_map);
+	Initialize(gameMap);
+
+}
+
+TileMap::TileMap(const std::string& path)
+{
+	MapGrid grid{};
+
+	if (!LoadMapFromFile(path, grid))
+	{
+		std::cout << "no map load";
+	}
+	Initialize(grid);
 }
 
 TileMap::~TileMap()
@@ -21,6 +62,7 @@ void TileMap::Initialize(const MapGrid& mapSketch)
 	mTileMapComponent = new TileMapComponent();
 	mTileMapComponent->mMap = mapSketch;
 	BuildMesh();
+	DetectTunnelRows();
 
 	mTileNode->AddComponent(mTileMapComponent);
 }
@@ -87,6 +129,75 @@ bool TileMap::TryConsumePickup(const sf::Vector2f& worldCenter, Cell& consumedCe
 
 	return false;
 }
+bool TileMap::TryTunnel(sf::Vector2f& position) const
+{
+	const float mapPixelWidth = static_cast<float>(MAP_WIDTH * TILE_SIZE);
+	const float halfTile = static_cast<float>(TILE_SIZE) * 0.5f;
+
+	const int tileY = TileMapComponent::ToTile(position.y + halfTile);
+	bool onTunnel = false;
+	for (int row : mTunnelRows)
+		if (tileY == row) { onTunnel = true; break; }
+
+	if (!onTunnel) return false;
+
+	bool warped = false;
+
+	if (position.x + halfTile < 0.f)
+	{
+		position.x = mapPixelWidth - static_cast<float>(TILE_SIZE);
+		warped = true;
+	}
+
+	else if (position.x + halfTile >= mapPixelWidth)
+	{
+		position.x = 0.f;
+		warped = true;
+	}
+
+	return warped;
+}
+
+bool TileMap::LoadMapFromFile(const std::string& path, MapGrid& outGrid)
+{
+	std::ifstream file(path, std::ios::binary);
+	if(!file.is_open())
+	{
+		return false;
+	}
+	uint8_t width{}, height{};
+
+	file.read(reinterpret_cast<char*>(&width), 1);
+	file.read(reinterpret_cast<char*>(&height), 1);
+	
+	if (width != MAP_WIDTH || height != MAP_HEIGHT)
+	{
+		return false;
+	}
+	for (int x = 0; x < MAP_WIDTH; ++x)
+	{
+		for (int y = 0; y < MAP_HEIGHT; ++y)
+		{
+			uint8_t val{};
+			file.read(reinterpret_cast<char*>(&val), 1);
+			outGrid[x][y] = static_cast<Cell>(val);
+		}
+	}
+
+}
+
+void TileMap::DetectTunnelRows()
+{
+	mTunnelRows.clear();
+	for (int y = 0; y < MAP_HEIGHT; ++y)
+	{
+		const bool leftOpen = (mTileMapComponent->mMap[0][y] == Cell::Empty);
+		const bool rightOpen = (mTileMapComponent->mMap[MAP_WIDTH - 1][y] == Cell::Empty);
+		if (leftOpen && rightOpen)
+			mTunnelRows.push_back(y);
+	}
+}
+
 void TileMap::BuildMesh()
 {
 	mTileMapComponent->mVertexArray.setPrimitiveType(sf::PrimitiveType::Triangles);
