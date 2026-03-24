@@ -38,8 +38,6 @@ public:
 
 	bool TryTunnel(sf::Vector2f& position) const;
 
-	bool LoadMapFromFile(const std::string& path, MapGrid& outGrid);
-
 	std::shared_ptr<Node> GetNode() const { return mTileNode; }
 
 	TileMapComponent* mTileMapComponent;

@@ -22,6 +22,7 @@ public:
 
 	std::shared_ptr<Node> GetNode() const { return mGhost; }
 
+
 private:
 	std::shared_ptr<Node> mGhost;
 
@@ -30,4 +31,5 @@ private:
 	TransformComponent* mTransformComponent;
 	GhostAIComponent* mGhostAIComponent;
 	ColliderComponent* mColiderComponent;
+
 };

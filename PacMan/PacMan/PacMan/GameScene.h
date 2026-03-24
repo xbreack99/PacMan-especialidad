@@ -42,12 +42,20 @@ private:
 	void CheckWin();
 	void UpdateHUD();
 
+	void SaveGame();
+
+	void LoadGame();
+
+	std::string GetEnergizerTime() const;
+
+	bool IsActiveEnergize()   const { return mTimerEnergize > 0.f; }
+
+public:
+
 	std::vector<Node*> mEntities;
 	PacMan* mPacmanNode = nullptr;
-	Ghost* mGhostB = nullptr;
-	Ghost* mGhostP = nullptr;
-	Ghost* mGhostI = nullptr;
-	Ghost* mGhostC = nullptr;
+	std::vector<Ghost*> mGhostNodes;
+
 	TileMap* mTileMapNode = nullptr;
 
 	std::unique_ptr<GhostAISystem> mGhostAISystem;
@@ -57,17 +65,26 @@ private:
 	std::unique_ptr<InputSystem> mInputSystem;
 
 
-	sf::Font mFont;
-	sf::Text mScoreText;
-	sf::Text mLivesText;
-
-	int mScore = 0;
-	int mLives = 3;
-	int mPelletsLeft = 0;
+	int32_t mScore = 0;
+	int32_t mLives = 3;
+	int32_t mPelletsLeft = 0;
+	
 	bool mGameActive = false;
 	bool mPacmanDead = false;
 	float mDeathTimer = 0.f;
 
+private:
+
+	sf::Font mFont;
+	sf::Text mScoreText;
+	sf::Text mLivesText;
+	sf::Text mSaveText;
+	sf::Text mEnergizerTimerText;
+
+	float mSaveTimer = 0.f;
+	float mTimerEnergize = 0.0f;
+
+	static constexpr float SAVE_NOTICE_DUR = 2.f;
 	static constexpr float DEATH_DELAY = 2.f;
 	static constexpr float FRIGHTENED_DUR = 8.f;
 	static constexpr int PELLET_SCORE = 10;

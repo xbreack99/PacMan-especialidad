@@ -49,7 +49,6 @@ public:
 
 	int mPhaseIndex = 0;
 	float mPhaseTimer = 0.f;
-
 	static constexpr float sPhaseDurations[4] = { 7.f, 20.f, 7.f, 20.f };
 	static constexpr float  FRIGHTENED_THERSHOLD = 20.f;
 

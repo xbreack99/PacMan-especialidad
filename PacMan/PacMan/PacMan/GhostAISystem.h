@@ -5,6 +5,7 @@
 
 class Node;
 class TileMapComponent;
+class Ghost;
 
 class GhostAISystem : public ISystem
 {
@@ -17,7 +18,7 @@ public:
 	void GhostUpdate(GhostAIComponent* ghost, float deltaTime);
 
 	void SetPacman(Node* pacmanNode) { mPacManNode = pacmanNode; }
-	void SetBlinky(Node* blinkyNode) { mBlinkyNode = blinkyNode; }
+
 	void SetTileMap(TileMapComponent* tilemap) { mTileMap = tilemap; }
 
 	void TriggerFrightened(float duration);
@@ -25,8 +26,6 @@ public:
 	void ReturnToHouse(GhostAIComponent* ghost);
 
 	void MoveGhost(GhostAIComponent* ghost, Node* node, float deltaTime);
-
-
 
 private:
 	
@@ -58,7 +57,7 @@ private:
 	Node* mPacManNode = nullptr;
 	Node* mBlinkyNode = nullptr;
 	TileMapComponent* mTileMap = nullptr;
-
-	static constexpr int CLYDE_FLEE_DISTANCE = 64; // Tiles
+	
+	static constexpr int CLYDE_FLEE_DISTANCE = 34;
 
 };

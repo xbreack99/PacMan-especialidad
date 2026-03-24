@@ -1,6 +1,11 @@
 #include "ModManager.h"
 #include <iostream>
-#include <windows.h>
+
+#ifdef WIN32
+	#include <windows.h>
+#else
+	#include <dlfcn.h>
+#endif
 
 ModManager::ModManager()
 {
@@ -30,7 +35,7 @@ ModManager::~ModManager()
 
 bool ModManager::LoadMod(const std::string& path)
 {
-	HMODULE handle = OpenLib(path);
+	LibHandle handle = OpenLib(path);
 	if (!handle)
 	{
 		// add logs
@@ -113,19 +118,36 @@ bool ModManager::IsActive(std::size_t index) const
 	return mMods[index].active;
 }
 
-HMODULE ModManager::OpenLib(const std::string& path)
+LibHandle ModManager::OpenLib(const std::string& path)
 {
+
+#ifdef WIN32
 	return LoadLibraryA(path.c_str());
+#else
+	return dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
+#endif
 
 }
 
-void* ModManager::GetSym(HMODULE handle, const std::string& name)
+void* ModManager::GetSym(LibHandle handle, const std::string& name)
 {
+
+#ifdef WIN32
 	return reinterpret_cast<void*>(GetProcAddress(handle, name.c_str()));
+#else
+	return dlsym(handle, name.c_str());
+#endif
+
 }
 
-void ModManager::CloseLib(HMODULE handle)
+void ModManager::CloseLib(LibHandle handle)
 {
+
 	if (!handle) return;
+#ifdef WIN32
 	FreeLibrary(handle);
+#else
+	dlclose(handle);
+#endif
+
 }

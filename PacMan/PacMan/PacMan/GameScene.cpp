@@ -13,12 +13,15 @@
 #include <memory.h>
 #include <string>
 #include "Ghost.h"
+#include "QuickSave.h"
 #include "GameOverScene.h"
 
 GameScene::GameScene(SceneManager& sceneManager, sf::RenderWindow& window) :
 	IScene(sceneManager, window)
 	, mScoreText(mFont)
 	, mLivesText(mFont)
+    , mSaveText(mFont)
+    , mEnergizerTimerText(mFont)
 {
     mGhostAISystem = std::make_unique<GhostAISystem>();
     mTileCollisionSystem = std::make_unique<TileCollisionSystem>();
@@ -55,6 +58,17 @@ void GameScene::OnEnter()
     mLivesText.setFillColor(sf::Color::White);
     mLivesText.setPosition({ 8.f, 24.f });
 
+    mEnergizerTimerText.setFont(mFont);
+    mEnergizerTimerText.setCharacterSize(16);
+    mEnergizerTimerText.setFillColor(sf::Color::Cyan);
+    mEnergizerTimerText.setPosition({ 8.f, 46.f });
+
+
+    mSaveText.setFont(mFont);
+    mSaveText.setCharacterSize(18);
+    mSaveText.setFillColor(sf::Color::Green);
+    mSaveText.setString("");
+
     mScore = 0;
     mLives = 3;
     mGameActive = true;
@@ -67,7 +81,6 @@ void GameScene::OnExit()
 
     mGhostAISystem->mNodes.clear();
     mGhostAISystem->SetPacman(nullptr);
-    mGhostAISystem->SetBlinky(nullptr);
     mGhostAISystem->SetTileMap(nullptr);
     mTileCollisionSystem->mNodes.clear();
     mTileCollisionSystem->SetTileMap(nullptr);
@@ -77,10 +90,7 @@ void GameScene::OnExit()
 
     mEntities.clear();
     mPacmanNode = nullptr;
-    mGhostB = nullptr;
-    mGhostP = nullptr;
-    mGhostI = nullptr;
-    mGhostC = nullptr;
+    mGhostNodes.clear();
     mTileMapNode = nullptr;
 }
 
@@ -89,7 +99,6 @@ void GameScene::ResetEntities()
 
     mGhostAISystem->mNodes.clear();
     mGhostAISystem->SetPacman(nullptr);
-    mGhostAISystem->SetBlinky(nullptr);
     mGhostAISystem->SetTileMap(nullptr);
     mTileCollisionSystem->mNodes.clear();
     mTileCollisionSystem->SetTileMap(nullptr);
@@ -99,10 +108,7 @@ void GameScene::ResetEntities()
 
     mEntities.clear();
     mPacmanNode = nullptr;
-    mGhostB = nullptr;
-    mGhostP = nullptr;
-    mGhostI = nullptr;
-    mGhostC = nullptr;
+    mGhostNodes.clear();
     mTileMapNode = nullptr;
 
     BuildMap();
@@ -111,7 +117,6 @@ void GameScene::ResetEntities()
 
 
     mGhostAISystem->SetPacman(mPacmanNode->GetNode().get());
-    mGhostAISystem->SetBlinky(mGhostB->GetNode().get());
     mGhostAISystem->SetTileMap(mTileMapNode->GetNode()->GetComponent<TileMapComponent>());
 
     mPelletsLeft = 0;
@@ -122,7 +127,7 @@ void GameScene::ResetEntities()
 
 void GameScene::BuildMap()
 {
-    mTileMapNode = new TileMap();
+    mTileMapNode = new TileMap("map2.txt");
 
     mEntities.push_back(mTileMapNode->GetNode().get());
 
@@ -150,37 +155,17 @@ void GameScene::BuildPacman()
 
 void GameScene::BuildGhost()
 {
-  
-    mGhostB = new Ghost(GhostType::Blinky);
-    mGhostI = new Ghost(GhostType::Inky);
-    mGhostC = new Ghost(GhostType::Clyde);
-    mGhostP = new Ghost(GhostType::Pinky);
-
-    mEntities.push_back(mGhostB->GetNode().get());
-    mEntities.push_back(mGhostI->GetNode().get());
-    mEntities.push_back(mGhostC->GetNode().get());
-    mEntities.push_back(mGhostP->GetNode().get());
-
-
-    mRenderSystem->mNodes.push_back(mGhostB->GetNode());
-    mRenderSystem->mNodes.push_back(mGhostI->GetNode());
-    mRenderSystem->mNodes.push_back(mGhostC->GetNode());
-    mRenderSystem->mNodes.push_back(mGhostP->GetNode());
+    for (int i = 0; i < 4; ++i)
+    {
+        Ghost* ghost = new  Ghost(static_cast<GhostType>(i));
+        mGhostNodes.push_back(ghost);
+        mEntities.push_back(ghost->GetNode().get());
     
-    mGhostAISystem->mNodes.push_back(mGhostB->GetNode());
-    mGhostAISystem->mNodes.push_back(mGhostI->GetNode());
-    mGhostAISystem->mNodes.push_back(mGhostC->GetNode());
-    mGhostAISystem->mNodes.push_back(mGhostP->GetNode());
-    
-    mCollisionSystem->mNodes.push_back(mGhostB->GetNode());
-    mCollisionSystem->mNodes.push_back(mGhostI->GetNode());
-    mCollisionSystem->mNodes.push_back(mGhostC->GetNode());
-    mCollisionSystem->mNodes.push_back(mGhostP->GetNode());
-    
-    mTileCollisionSystem->AddNode(mGhostB->GetNode());
-    mTileCollisionSystem->AddNode(mGhostI->GetNode());
-    mTileCollisionSystem->AddNode(mGhostC->GetNode());
-    mTileCollisionSystem->AddNode(mGhostP->GetNode());
+        mGhostAISystem->mNodes.push_back(ghost->GetNode());
+        mRenderSystem->mNodes.push_back(ghost->GetNode());
+        mCollisionSystem->mNodes.push_back(ghost->GetNode());
+        mTileCollisionSystem->AddNode(ghost->GetNode());
+    };
 
 }
 
@@ -196,6 +181,12 @@ void GameScene::HandleEvent(const sf::Event& event)
         {
         case sf::Keyboard::Key::F1 : 
             mModManager.ToogleMod(0, mCtx); 
+            break;
+        case sf::Keyboard::Key::F5:
+            SaveGame();
+            break;
+        case sf::Keyboard::Key::F9:
+            LoadGame();
             break;
         default:
             break;
@@ -217,6 +208,38 @@ void GameScene::HandleEvent(const sf::Event& event)
 void GameScene::Update(float deltaTime)
 {
     if (!mGameActive) return;
+
+    if (mSaveTimer > 0.f)
+        mSaveTimer -= deltaTime;
+
+    if (mTimerEnergize > 0.f)
+    {
+        mTimerEnergize -= deltaTime;
+
+        if(mTimerEnergize <= 0.f)
+        {
+            for (auto* ghost : mGhostNodes)
+            {
+                auto* ai = ghost->GetNode()->GetComponent<GhostAIComponent>();
+                auto* graphics = ghost->GetNode()->GetComponent<GraphicsComponent>();
+                switch (ai->mGhostType)
+                {
+                case GhostType::Blinky:
+                    graphics->mShape.setFillColor(sf::Color::Red);
+                    break;
+                case GhostType::Pinky:
+                    graphics->mShape.setFillColor(sf::Color::Magenta);
+                    break;
+                case GhostType::Inky:
+                    graphics->mShape.setFillColor(sf::Color::Blue);
+                    break;
+                case GhostType::Clyde:
+                    graphics->mShape.setFillColor(sf::Color::Green);
+                    break;
+                }
+            }
+        }
+    }
 
     if (mPacmanDead)
     {
@@ -274,6 +297,7 @@ void GameScene::CheckPacmanPickups()
             mScore += ENERGIZER_SCORE;
             --mPelletsLeft;
             mGhostAISystem->TriggerFrightened(FRIGHTENED_DUR);
+            mTimerEnergize = FRIGHTENED_DUR;
             break;
         default: break;
         }
@@ -299,6 +323,41 @@ void GameScene::UpdateHUD()
 {
     mScoreText.setString("SCORE: " + std::to_string(mScore));
     mLivesText.setString("LIVES: " + std::to_string(mLives));
+
+    const std::string timerStr = GetEnergizerTime();
+    mEnergizerTimerText.setString(timerStr.empty() ? "" : "POWER: " + timerStr);
+}
+
+void GameScene::SaveGame()
+{
+    SaveState state;
+    QuickSave::CaptureFrame(state, *this);
+    if (QuickSave::Save("save.bin", state))
+    {
+        mSaveText.setString("GAME SAVED");
+        mSaveTimer = SAVE_NOTICE_DUR;
+    }
+}
+
+void GameScene::LoadGame()
+{
+    SaveState state;
+    QuickSave::Load("save.bin",state);
+    ResetEntities();
+    QuickSave::ChargeState(state, *this);
+    UpdateHUD();
+
+    mSaveText.setString("GAME lOADED");
+    mSaveTimer = SAVE_NOTICE_DUR;
+
+}
+
+std::string GameScene::GetEnergizerTime() const
+{
+    if (!IsActiveEnergize()) return "";
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << mTimerEnergize;
+    return oss.str();
 }
 
 void GameScene::Render()
@@ -310,9 +369,34 @@ void GameScene::Render()
         mTileMapNode->Draw(mWindow);
     }
     
+    if (IsActiveEnergize())
+    {
+        for (auto* ghost : mGhostNodes)
+        {
+            auto* ai = ghost->GetNode()->GetComponent<GhostAIComponent>();
+            auto* graphics = ghost->GetNode()->GetComponent<GraphicsComponent>();
+            if (ai && ai->mState == GhostState::Frightened)
+            {
+                graphics->mShape.setFillColor(sf::Color::White);
+            }
+        }
+    }
     mRenderSystem->Render(mWindow);
     mWindow.draw(mScoreText);
     mWindow.draw(mLivesText);
+    if (IsActiveEnergize())
+        mWindow.draw(mEnergizerTimerText);
+    
+    if (mSaveTimer > 0.f)
+    {
+        const sf::Vector2u sz = mWindow.getSize();
+        mSaveText.setOrigin(
+            mSaveText.getLocalBounds().size / 2.f);
+        mSaveText.setPosition({
+            static_cast<float>(sz.x) / 2.f,
+            static_cast<float>(sz.y) * 0.45f });
+        mWindow.draw(mSaveText);
+    }
 
     mWindow.display();
 }

@@ -28,7 +28,6 @@ void GhostAISystem::Update(float deltaTime)
 				ghost->isFrightened = false;
 			}
 		}
-
 		switch (ghost->mState)
 		{
 			case GhostState::Chase: ghost->mTargetTile = CalculateTargetTile(ghost);

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include "MapLoader.h"
 
 TileMap::TileMap()
 {
@@ -42,7 +43,7 @@ TileMap::TileMap(const std::string& path)
 {
 	MapGrid grid{};
 
-	if (!LoadMapFromFile(path, grid))
+	if (!MapLoader::LoadFromText(path, grid, mPlayerStartposition))
 	{
 		std::cout << "no map load";
 	}
@@ -156,34 +157,6 @@ bool TileMap::TryTunnel(sf::Vector2f& position) const
 	}
 
 	return warped;
-}
-
-bool TileMap::LoadMapFromFile(const std::string& path, MapGrid& outGrid)
-{
-	std::ifstream file(path, std::ios::binary);
-	if(!file.is_open())
-	{
-		return false;
-	}
-	uint8_t width{}, height{};
-
-	file.read(reinterpret_cast<char*>(&width), 1);
-	file.read(reinterpret_cast<char*>(&height), 1);
-	
-	if (width != MAP_WIDTH || height != MAP_HEIGHT)
-	{
-		return false;
-	}
-	for (int x = 0; x < MAP_WIDTH; ++x)
-	{
-		for (int y = 0; y < MAP_HEIGHT; ++y)
-		{
-			uint8_t val{};
-			file.read(reinterpret_cast<char*>(&val), 1);
-			outGrid[x][y] = static_cast<Cell>(val);
-		}
-	}
-
 }
 
 void TileMap::DetectTunnelRows()

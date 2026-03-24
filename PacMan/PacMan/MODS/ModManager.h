@@ -6,9 +6,10 @@
 #include <memory>
 
 #ifdef WIN32
-	#include <Windows.h>
+#include <Windows.h>
+using LibHandle = HMODULE;
 #else
-#include <dlfcn.h>
+using LibHandle = void*;
 #endif
 
 using DestroyModFn = void(*)(IMod*);
@@ -44,8 +45,8 @@ private:
 	std::vector<ModInfo> mMods;
 
 
-	static HMODULE OpenLib(const std::string& path);
-	static void* GetSym(HMODULE handle, const std::string& name);
-	static void CloseLib(HMODULE handle);
+	static LibHandle OpenLib(const std::string& path);
+	static void* GetSym(LibHandle handle, const std::string& name);
+	static void CloseLib(LibHandle handle);
 
 };
