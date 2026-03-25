@@ -15,7 +15,30 @@ add_library(
     InputComponent.h
     InputComponent.cpp
     RenderSystem.h
-    RenderSystem.cpp "ColisionSystem.h" "ColisionSystem.cpp" "ColliderComponent.cpp" "ColliderComponent.h" "Singleton.h" "TileMapComponent.h" "Utilitys.h" "TileMapComponent.cpp" "TileCollisionSystem.h" "TileCollisionSystem.cpp" "MovementComponent.h" "MovementComponent.cpp"  "SceneManager.h" "SceneManager.cpp" "IScene.h"   )
+    RenderSystem.cpp 
+    "ColisionSystem.h"
+    "ColisionSystem.cpp"
+    "ColliderComponent.cpp"
+    "ColliderComponent.h"
+    "Singleton.h"
+    "TileMapComponent.h"
+    "Utilitys.h"
+    "TileMapComponent.cpp"
+    "TileCollisionSystem.h"
+    "TileCollisionSystem.cpp"
+    "MovementComponent.h"
+    "MovementComponent.cpp"
+    "SceneManager.h"
+    "SceneManager.cpp"
+    "IScene.h"   )
 
-find_package(ImGui-SFML CONFIG REQUIRED)
-target_link_libraries(FrameworkCore PRIVATE ImGui-SFML::ImGui-SFML)
+include(FetchContent)
+FetchContent_Declare(SFML
+    GIT_REPOSITORY https://github.com/SFML/SFML.git
+    GIT_TAG 3.0.2
+    GIT_SHALLOW ON
+    EXCLUDE_FROM_ALL
+    SYSTEM)
+FetchContent_MakeAvailable(SFML)
+
+target_link_libraries(FrameworkCore PRIVATE SFML::Graphics)

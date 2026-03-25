@@ -9,8 +9,6 @@
 #include "../FrameworkCore/InputComponent.h"
 #include "../FrameworkCore/MovementComponent.h"
 
-#include <imgui.h>
-#include <imgui-SFML.h>
 #include <SFML/Graphics.hpp>
 
 PacMan::PacMan()
@@ -69,7 +67,7 @@ sf::Vector2f PacMan::GetPosition() const
 
 void PacMan::SetPosition(int x, int y)
 {
-	mTransformComponent->SetPosition(x, y);
+	mTransformComponent->SetPosition(static_cast<float>(x), static_cast<float>(y));
 }
 
 sf::FloatRect PacMan::GetBounds() const

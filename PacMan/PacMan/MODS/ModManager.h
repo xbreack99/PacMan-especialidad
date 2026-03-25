@@ -17,11 +17,10 @@ using CreateModFn = IMod * (*)();
 
 struct ModInfo
 {
-	HMODULE handle = nullptr;
+	LibHandle handle = nullptr;
 	IMod* instance = nullptr;
 	DestroyModFn destroy = nullptr;
 	bool active = false;
-
 };
 
 class ModManager

@@ -8,15 +8,22 @@ add_library(SpeedBoost SHARED
  
 target_include_directories(SpeedBoost
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}          # SpeedBoost.h
+        ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE
-        ${MODS_INCLUDE_DIR}                  # IMod.h, ModContext.h
-        ${FRAMEWORK_INCLUDE_DIR}             # MovementComponent.h
+        ${MODS_INCLUDE_DIR}                 
+        ${FRAMEWORK_INCLUDE_DIR}             
 )
 
-find_package(ImGui-SFML CONFIG REQUIRED)
-target_link_libraries(SpeedBoost PRIVATE ImGui-SFML::ImGui-SFML)
+include(FetchContent)
+FetchContent_Declare(SFML
+    GIT_REPOSITORY https://github.com/SFML/SFML.git
+    GIT_TAG 3.0.2
+    GIT_SHALLOW ON
+    EXCLUDE_FROM_ALL
+    SYSTEM)
+FetchContent_MakeAvailable(SFML)
 
+target_link_libraries(SpeedBoost PRIVATE SFML::Graphics)
 # Set Windows-specific properties
 if(WIN32)
     target_compile_definitions(SpeedBoost PRIVATE MYLIBRARY_EXPORTS)
