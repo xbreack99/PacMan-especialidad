@@ -77,6 +77,7 @@ private:
 
 	sf::Font mFont;
 	sf::Text mScoreText;
+	sf::Text mInfoText;
 	sf::Text mLivesText;
 	sf::Text mSaveText;
 	sf::Text mEnergizerTimerText;

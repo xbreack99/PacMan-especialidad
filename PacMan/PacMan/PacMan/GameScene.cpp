@@ -22,6 +22,7 @@ GameScene::GameScene(SceneManager& sceneManager, sf::RenderWindow& window) :
 	, mLivesText(mFont)
     , mSaveText(mFont)
     , mEnergizerTimerText(mFont)
+    , mInfoText(mFont)
 {
     mGhostAISystem = std::make_unique<GhostAISystem>();
     mTileCollisionSystem = std::make_unique<TileCollisionSystem>();
@@ -68,6 +69,12 @@ void GameScene::OnEnter()
     mSaveText.setCharacterSize(18);
     mSaveText.setFillColor(sf::Color::Green);
     mSaveText.setString("");
+
+    mInfoText.setFont(mFont);
+    mInfoText.setCharacterSize(8);
+    mInfoText.setFillColor(sf::Color::Red);
+    mInfoText.setPosition({ 8.f, 350.f });
+    mInfoText.setString("F1 activate mods F5 SAVE F9 LOAD GAME");
 
     mScore = 0;
     mLives = 3;
@@ -384,6 +391,7 @@ void GameScene::Render()
     mRenderSystem->Render(mWindow);
     mWindow.draw(mScoreText);
     mWindow.draw(mLivesText);
+    mWindow.draw(mInfoText);
     if (IsActiveEnergize())
         mWindow.draw(mEnergizerTimerText);
     
